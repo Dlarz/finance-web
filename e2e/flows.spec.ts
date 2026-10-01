@@ -132,3 +132,22 @@ test.describe('core flows', () => {
     expect(errors, errors.join('\n')).toEqual([]);
   });
 });
+
+test('asks before discarding unsaved changes on a browser back gesture', async ({ page }) => {
+  await setLanguage(page, 'en');
+  await skipInstallHint(page);
+  await onboard(page, '0');
+  await page.getByTestId('fab-add').click();
+  await typeAmount(page, '5');
+  await page.goBack();
+  await expect(page.getByRole('alertdialog')).toContainText('Discard changes?');
+  await page.getByRole('button', { name: 'Keep editing' }).click();
+  await expect(page.getByTestId('add-edit-screen')).toBeVisible();
+  await expect(page.getByTestId('amount-display')).toContainText('5');
+  await page.goBack();
+  await page.getByRole('button', { name: 'Discard' }).click();
+  await expect(page.getByTestId('home-screen')).toBeVisible();
+  // the draft is gone: opening the form again starts empty
+  await page.getByTestId('fab-add').click();
+  await expect(page.getByTestId('save-button')).toBeDisabled();
+});
