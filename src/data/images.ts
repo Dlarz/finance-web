@@ -44,5 +44,10 @@ export async function processImageFile(file: Blob): Promise<NewImage> {
   const img = await loadImage(file);
   const full = await draw(img, MAX_IMAGE_SIDE, 0.85);
   const thumb = await draw(img, THUMB_SIDE, 0.8);
-  return { blob: full.blob, thumb: thumb.blob, width: full.width, height: full.height };
+  return { data: await full.blob.arrayBuffer(), thumb: await thumb.blob.arrayBuffer(), mimeType: 'image/jpeg', width: full.width, height: full.height };
+}
+
+/** Blob for displaying stored image bytes. */
+export function imageBlob(data: ArrayBuffer, mimeType = 'image/jpeg'): Blob {
+  return new Blob([data], { type: mimeType });
 }

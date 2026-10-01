@@ -192,8 +192,8 @@ export function AddEditScreen({ editId }: { editId?: string }) {
   const nextDate = schedule ? nextOccurrenceOnOrAfter(schedule, addDays(form.date > today ? form.date : today, 1)) : null;
 
   const pictureItems: PictureItem[] = [
-    ...existingAttachments.filter((a) => !form.removedAttachmentIds.includes(a.id)).map((a) => ({ id: a.id, blob: a.blob, thumb: a.thumb })),
-    ...form.images.map((i) => ({ id: i.id, blob: i.blob, thumb: i.thumb })),
+    ...existingAttachments.filter((a) => !form.removedAttachmentIds.includes(a.id)).map((a) => ({ id: a.id, data: a.data, thumb: a.thumb, mimeType: a.mimeType })),
+    ...form.images.map((i) => ({ id: i.id, data: i.data, thumb: i.thumb, mimeType: i.mimeType })),
   ];
 
   const addImages = async (files: File[]) => {

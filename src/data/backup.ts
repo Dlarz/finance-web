@@ -55,6 +55,10 @@ async function blobToU8(blob: Blob): Promise<Uint8Array> {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
+function toU8(data: ArrayBuffer): Uint8Array {
+  return new Uint8Array(data);
+}
+
 /** Exports all data and settings plus all pictures as one zip file. */
 export async function createBackup(db: FinanceDB, clock: Clock, appVersion: string): Promise<Blob> {
   const [settingsRows, categories, tags, transactions, transactionTags, recurringRules, tombstones, attachments] = await db.transaction(
@@ -81,8 +85,8 @@ export async function createBackup(db: FinanceDB, clock: Clock, appVersion: stri
   for (const a of attachments) {
     const fileName = `images/${a.id}.jpg`;
     const thumbFileName = `thumbs/${a.id}.jpg`;
-    files[fileName] = await blobToU8(a.blob);
-    files[thumbFileName] = await blobToU8(a.thumb);
+    files[fileName] = toU8(a.data);
+    files[thumbFileName] = toU8(a.thumb);
     attachmentMeta.push({ id: a.id, transactionId: a.transactionId, fileName, thumbFileName, width: a.width, height: a.height, createdAt: a.createdAt });
   }
   const json: BackupJson = {
@@ -310,8 +314,9 @@ export async function restoreBackup(db: FinanceDB, parsed: ParsedBackup): Promis
     return {
       id: a.id,
       transactionId: a.transactionId,
-      blob: new Blob([full as BlobPart], { type: 'image/jpeg' }),
-      thumb: new Blob([thumb as BlobPart], { type: 'image/jpeg' }),
+      data: full.slice().buffer as ArrayBuffer,
+      thumb: thumb.slice().buffer as ArrayBuffer,
+      mimeType: 'image/jpeg',
       width: a.width,
       height: a.height,
       createdAt: a.createdAt,

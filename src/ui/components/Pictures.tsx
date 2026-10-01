@@ -4,13 +4,14 @@ import { Icon } from './Icon';
 
 export interface PictureItem {
   id: string;
-  blob: Blob;
-  thumb: Blob;
+  data: ArrayBuffer;
+  thumb: ArrayBuffer;
+  mimeType?: string;
 }
 
-/** Object URL for a blob, revoked on unmount. */
-export function useObjectUrl(blob: Blob | null | undefined): string | undefined {
-  const url = useMemo(() => (blob ? URL.createObjectURL(blob) : undefined), [blob]);
+/** Object URL for stored image bytes, revoked on unmount. */
+export function useObjectUrl(data: ArrayBuffer | null | undefined, mimeType = 'image/jpeg'): string | undefined {
+  const url = useMemo(() => (data ? URL.createObjectURL(new Blob([data], { type: mimeType })) : undefined), [data, mimeType]);
   useEffect(() => () => {
     if (url) URL.revokeObjectURL(url);
   }, [url]);
@@ -19,7 +20,7 @@ export function useObjectUrl(blob: Blob | null | undefined): string | undefined 
 
 function Thumb({ item, onClick, onRemove }: { item: PictureItem; onClick: () => void; onRemove?: () => void }) {
   const { t } = useI18n();
-  const url = useObjectUrl(item.thumb);
+  const url = useObjectUrl(item.thumb, item.mimeType);
   return (
     <div className="thumb anim-in">
       <button type="button" onClick={onClick} aria-label={t('photoViewer')} style={{ width: '100%', height: '100%' }}>
@@ -79,7 +80,7 @@ export function PictureGrid({ items, onRemove, onAdd, busy }: PictureGridProps) 
 }
 
 function Slide({ item, active }: { item: PictureItem; active: boolean }) {
-  const url = useObjectUrl(item.blob);
+  const url = useObjectUrl(item.data, item.mimeType);
   const imgRef = useRef<HTMLImageElement>(null);
   const state = useRef({ scale: 1, x: 0, y: 0, startDist: 0, startScale: 1, lastX: 0, lastY: 0, panning: false, lastTap: 0 });
 

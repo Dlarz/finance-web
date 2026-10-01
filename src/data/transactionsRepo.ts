@@ -4,8 +4,9 @@ import { ensureTags, pruneUnusedTags, setTransactionTags } from './tagsRepo';
 import type { Attachment, Tag, Transaction, TxType } from './types';
 
 export interface NewImage {
-  blob: Blob;
-  thumb: Blob;
+  data: ArrayBuffer;
+  thumb: ArrayBuffer;
+  mimeType: string;
   width: number;
   height: number;
 }
@@ -71,8 +72,9 @@ export async function addAttachment(db: FinanceDB, clock: Clock, transactionId: 
   const att: Attachment = {
     id: newId(),
     transactionId,
-    blob: img.blob,
+    data: img.data,
     thumb: img.thumb,
+    mimeType: img.mimeType || 'image/jpeg',
     width: img.width,
     height: img.height,
     createdAt: clock.now(),

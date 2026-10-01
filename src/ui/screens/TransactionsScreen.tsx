@@ -44,9 +44,14 @@ export function TransactionsScreen({ query }: { query: TransactionsQuery }) {
   // Coming from Statistics with a query: start from those filters.
   const queryKey = JSON.stringify(query);
   useEffect(() => {
-    if (queryKey !== state.queryKey && (query.categoryId || query.type || query.start || query.end)) {
+    if (queryKey === state.queryKey) return;
+    const hasQuery = !!(query.categoryId || query.type || query.start || query.end);
+    if (hasQuery) {
       setTxListState({ filters: queryToFilters(query), search: '', queryKey });
-    } else if (queryKey !== state.queryKey) {
+    } else if (state.queryKey && state.queryKey !== '{}') {
+      // leaving a drill-down from Statistics: back to the full list
+      setTxListState({ filters: EMPTY_FILTERS, search: '', queryKey });
+    } else {
       setTxListState({ queryKey });
     }
   }, [queryKey, query, state.queryKey]);
@@ -246,7 +251,7 @@ export function TransactionsScreen({ query }: { query: TransactionsQuery }) {
 function FilterSheet({ filters, categories, tags, onClose, onApply }: { filters: TxFilters; categories: { id: string; name: string; type: TxType; colorHex: string }[]; tags: string[]; onClose: () => void; onApply: (f: TxFilters) => void }) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<TxFilters>(filters);
-  const cats = categories.filter((c) => !draft.type || c.type === draft.type);
+  const cats = [...categories.filter((c) => !draft.type || c.type === draft.type)].sort((a, b) => (a.type === b.type ? 0 : a.type === 'EXPENSE' ? -1 : 1));
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   return (
     <Sheet
@@ -282,7 +287,7 @@ function FilterSheet({ filters, categories, tags, onClose, onApply }: { filters:
           <div className="chips">
             {cats.map((c) => (
               <Chip key={c.id} selected={draft.categoryIds.includes(c.id)} onClick={() => setDraft((d) => ({ ...d, categoryIds: toggle(d.categoryIds, c.id) }))}>
-                <span className="legend-dot" style={{ background: c.colorHex }} />
+                <span className="legend-dot" style={{ background: c.colorHex, marginRight: '0.375rem' }} />
                 {c.name}
               </Chip>
             ))}

@@ -107,7 +107,7 @@ export function TransactionDetailsScreen({ id }: { id: string }) {
           {details.attachments.length > 0 && (
             <div className="field">
               <span className="field__label">{t('pictures')}</span>
-              <PictureGrid items={details.attachments.map((a) => ({ id: a.id, blob: a.blob, thumb: a.thumb }))} />
+              <PictureGrid items={details.attachments.map((a) => ({ id: a.id, data: a.data, thumb: a.thumb, mimeType: a.mimeType }))} />
             </div>
           )}
 

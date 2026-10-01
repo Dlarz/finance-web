@@ -20,7 +20,8 @@ beforeEach(async () => {
   other = cats.find((c) => c.name === 'Other' && c.type === 'EXPENSE')!.id;
 });
 
-const img = () => ({ blob: new Blob(['full'], { type: 'image/jpeg' }), thumb: new Blob(['thumb'], { type: 'image/jpeg' }), width: 10, height: 20 });
+const enc = new TextEncoder();
+const img = () => ({ data: enc.encode('full').buffer as ArrayBuffer, thumb: enc.encode('thumb').buffer as ArrayBuffer, mimeType: 'image/jpeg', width: 10, height: 20 });
 
 describe('transactions', () => {
   it('adds with tags and pictures, then deletes and restores everything', async () => {
@@ -37,7 +38,7 @@ describe('transactions', () => {
     const restored = await getTransactionDetails(db, tx.id);
     expect(restored!.tags.map((t) => t.name)).toEqual(['Coop', 'Weekly']);
     expect(restored!.attachments).toHaveLength(2);
-    expect(await restored!.attachments[0]!.blob.text()).toBe('full');
+    expect(new TextDecoder().decode(restored!.attachments[0]!.data)).toBe('full');
   });
 
   it('updates fields, tags and pictures', async () => {

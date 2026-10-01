@@ -44,10 +44,11 @@ export interface TransactionTag {
 export interface Attachment {
   id: string;
   transactionId: string;
-  /** JPEG, max 2000 px on the long side */
-  blob: Blob;
+  /** JPEG bytes, max 2000 px on the long side (ArrayBuffer: Safari cannot reliably store Blobs in IndexedDB) */
+  data: ArrayBuffer;
   /** small JPEG for lists */
-  thumb: Blob;
+  thumb: ArrayBuffer;
+  mimeType: string;
   width: number;
   height: number;
   createdAt: number;

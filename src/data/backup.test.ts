@@ -27,7 +27,8 @@ async function snapshot(d: FinanceDB) {
     d.tombstones.toArray(),
     d.attachments.orderBy('id').toArray(),
   ]);
-  const images = await Promise.all(attachments.map(async (a) => ({ ...a, blob: await a.blob.text(), thumb: await a.thumb.text() })));
+  const dec = new TextDecoder();
+  const images = attachments.map((a) => ({ ...a, data: dec.decode(a.data), thumb: dec.decode(a.thumb) }));
   const sortRefs = (l: { transactionId: string; tagId: string }[]) => [...l].sort((a, b) => (a.transactionId + a.tagId).localeCompare(b.transactionId + b.tagId));
   return { settings: { ...settings, onboarded: true }, categories, tags, transactions, transactionTags: sortRefs(transactionTags), rules, tombstones, images };
 }
@@ -37,7 +38,7 @@ describe('backup', () => {
     await loadDemoData(db, clock, 'de');
     const groceries = (await db.categories.toArray()).find((c) => c.iconKey === 'shopping_cart')!;
     await addTransaction(db, clock, { type: 'EXPENSE', amount: 4200, categoryId: groceries.id, date: '2026-09-30', comment: 'Mit Bild', tagNames: ['foto'] }, [
-      { blob: new Blob(['full-image'], { type: 'image/jpeg' }), thumb: new Blob(['thumb-image'], { type: 'image/jpeg' }), width: 1, height: 2 },
+      { data: new TextEncoder().encode('full-image').buffer as ArrayBuffer, thumb: new TextEncoder().encode('thumb-image').buffer as ArrayBuffer, mimeType: 'image/jpeg', width: 1, height: 2 },
     ]);
     const first = (await db.transactions.filter((t) => !!t.recurringRuleId).first())!;
     await db.tombstones.add({ ruleId: first.recurringRuleId!, occurrenceDate: '2099-01-01' });

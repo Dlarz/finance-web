@@ -51,7 +51,7 @@ export function RecurringScreen() {
             const ended = !rule.isPaused && next === null;
             return (
               <div key={rule.id} className="row" data-testid="rule-row" style={{ alignItems: 'flex-start', paddingRight: '0.5rem' }}>
-                <button type="button" className="row-flex grow" style={{ textAlign: 'left', alignItems: 'flex-start' }} onClick={() => navigate({ name: 'rule', id: rule.id })}>
+                <button type="button" className="row-flex" style={{ textAlign: 'left', alignItems: 'flex-start', flex: '1 1 0', minWidth: 0 }} onClick={() => navigate({ name: 'rule', id: rule.id })}>
                   <CategoryIcon iconKey={cat?.iconKey ?? 'category'} colorHex={cat?.colorHex ?? '#6B7280'} />
                   <span className="row__body">
                     <span className="row-flex" style={{ justifyContent: 'space-between', gap: '0.5rem' }}>
@@ -78,6 +78,7 @@ export function RecurringScreen() {
                 <button
                   type="button"
                   className="btn btn--icon"
+                  style={{ flex: '0 0 auto' }}
                   aria-label={rule.isPaused ? t('resume') : t('pause')}
                   onClick={() => void (rule.isPaused ? resumeRule(db, clock, rule.id) : pauseRule(db, clock, rule.id))}
                   data-testid="rule-toggle"

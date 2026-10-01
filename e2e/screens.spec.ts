@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { collectErrors, injectCss, LARGE_FONT_CSS, loadDemoData, SAFE_AREA_CSS, setLanguage, shot, shotScrolled, skipInstallHint, typeAmount } from './helpers';
 
 const variants = [
@@ -81,6 +82,8 @@ for (const v of variants) {
       await shot(page, v.folder, '14-add');
       await page.getByTestId('category-tile').first().click();
       await shot(page, v.folder, '14b-add-category-selected');
+      await page.getByTestId('picture-input').setInputFiles([{ name: 'receipt.png', mimeType: 'image/png', buffer: readFileSync('public/icons/icon-512.png') }]);
+      await expect(page.getByTestId('pictures').locator('.thumb img')).toHaveCount(1);
       await page.getByTestId('repeat-MONTHLY').click();
       await expect(page.getByTestId('repeat-preview')).toBeVisible();
       await shotScrolled(page, v.folder, '15-add-repeat');
