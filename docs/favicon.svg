@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Finance-App icon: a thick donut ring of 4 segments (red, blue, yellow, green) with small gaps on a dark background. -->
+  <rect width="512" height="512" rx="96" fill="#12151c"/>
+  <g transform="translate(256 256) rotate(-90)" fill="none" stroke-width="62" stroke-linecap="butt">
+    <!-- circumference of r=150 is ~942.5; each segment is a quarter minus a gap -->
+    <circle r="150" stroke="#E5484D" stroke-dasharray="212 730.48" stroke-dashoffset="0"/>
+    <circle r="150" stroke="#3E63DD" stroke-dasharray="212 730.48" stroke-dashoffset="-235.62"/>
+    <circle r="150" stroke="#F5A524" stroke-dasharray="212 730.48" stroke-dashoffset="-471.24"/>
+    <circle r="150" stroke="#30A46C" stroke-dasharray="212 730.48" stroke-dashoffset="-706.86"/>
+  </g>
+</svg>
