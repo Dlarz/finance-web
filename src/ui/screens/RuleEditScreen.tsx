@@ -12,6 +12,7 @@ import type { RecurringRule, TxType } from '../../data/types';
 import { addDays, type ISODate } from '../../domain/dates';
 import { amountToInput, applyKeypadKey, parseAmountInput } from '../../domain/money';
 import type { Frequency } from '../../domain/recurring';
+import { withPendingTag } from '../../domain/tagSuggestions';
 import { useI18n } from '../../i18n';
 import { CategoryEditor } from '../components/CategoryEditor';
 import { Chip } from '../components/Chip';
@@ -32,6 +33,7 @@ interface RuleForm {
   categoryId: string | null;
   comment: string;
   tags: string[];
+  tagText: string;
   frequency: Frequency;
   interval: number;
   startDate: ISODate;
@@ -60,7 +62,7 @@ export function RuleEditScreen({ id }: { id: string | null }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      let base: RuleForm = { type: 'EXPENSE', amountText: '', categoryId: null, comment: '', tags: [], frequency: 'MONTHLY', interval: 1, startDate: today, endDate: null };
+      let base: RuleForm = { type: 'EXPENSE', amountText: '', categoryId: null, comment: '', tags: [], tagText: '', frequency: 'MONTHLY', interval: 1, startDate: today, endDate: null };
       if (id) {
         const existing = await db.recurringRules.get(id);
         if (!existing) {
@@ -74,6 +76,7 @@ export function RuleEditScreen({ id }: { id: string | null }) {
           categoryId: existing.categoryId,
           comment: existing.comment,
           tags: tags.filter((x): x is NonNullable<typeof x> => !!x).map((x) => x.name),
+          tagText: '',
           frequency: existing.frequency,
           interval: existing.interval,
           startDate: existing.startDate,
@@ -128,7 +131,7 @@ export function RuleEditScreen({ id }: { id: string | null }) {
     if (!valid || busy || amount === null || !form.categoryId) return;
     setBusy(true);
     try {
-      const input = { type: form.type, amount, categoryId: form.categoryId, comment: form.comment, tagNames: form.tags, frequency: form.frequency, interval: form.interval, startDate: form.startDate, endDate: form.endDate };
+      const input = { type: form.type, amount, categoryId: form.categoryId, comment: form.comment, tagNames: withPendingTag(form.tags, form.tagText), frequency: form.frequency, interval: form.interval, startDate: form.startDate, endDate: form.endDate };
       let message = t('ruleSaved');
       if (id) await updateRule(db, clock, id, input);
       else {
@@ -317,7 +320,7 @@ export function RuleEditScreen({ id }: { id: string | null }) {
 
         <div className="field">
           <span className="field__label">{t('tags')}</span>
-          <TagInput tags={form.tags} onChange={(tags) => update({ tags })} suggestions={suggestions} onFocus={closeKeypad} />
+          <TagInput tags={form.tags} onChange={(tags) => update({ tags })} text={form.tagText} onTextChange={(tagText) => update({ tagText })} suggestions={suggestions} onFocus={closeKeypad} />
         </div>
         <label className="field">
           <span className="field__label">{t('comment')}</span>

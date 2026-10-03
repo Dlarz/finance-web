@@ -251,11 +251,11 @@ img {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding: 0.25rem calc(var(--gutter) + var(--safe-right)) calc(var(--safe-bottom) + 2rem) calc(var(--gutter) + var(--safe-left));
+  padding: 0.25rem calc(var(--gutter) + var(--safe-right)) calc(var(--safe-bottom) + 2rem + var(--keyboard-inset, 0px)) calc(var(--gutter) + var(--safe-left));
 }
 
 .screen__body--tab {
-  padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 4rem);
+  padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 4rem + var(--keyboard-inset, 0px));
 }
 
 .screen__body--flush {
