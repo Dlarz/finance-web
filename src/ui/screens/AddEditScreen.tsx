@@ -14,6 +14,7 @@ import type { Attachment, TxType } from '../../data/types';
 import { addDays, type ISODate } from '../../domain/dates';
 import { amountToInput, applyKeypadKey, parseAmountInput } from '../../domain/money';
 import { nextOccurrenceOnOrAfter, type Frequency } from '../../domain/recurring';
+import { withPendingTag } from '../../domain/tagSuggestions';
 import { useI18n } from '../../i18n';
 import { CategoryEditor } from '../components/CategoryEditor';
 import { Chip } from '../components/Chip';
@@ -41,6 +42,8 @@ interface FormState {
   categoryId: string | null;
   date: ISODate;
   tags: string[];
+  /** text still typed in the tag field; it becomes a tag when saving */
+  tagText: string;
   comment: string;
   images: PendingImage[];
   removedAttachmentIds: string[];
@@ -50,7 +53,7 @@ interface FormState {
 }
 
 function emptyForm(today: ISODate): FormState {
-  return { type: 'EXPENSE', amountText: '', categoryId: null, date: today, tags: [], comment: '', images: [], removedAttachmentIds: [], repeat: 'OFF', interval: 1, endDate: null };
+  return { type: 'EXPENSE', amountText: '', categoryId: null, date: today, tags: [], tagText: '', comment: '', images: [], removedAttachmentIds: [], repeat: 'OFF', interval: 1, endDate: null };
 }
 
 function fingerprint(f: FormState): string {
@@ -100,6 +103,7 @@ export function AddEditScreen({ editId }: { editId?: string }) {
           categoryId: tx.categoryId,
           date: tx.date,
           tags: details.tags.map((x) => x.name),
+          tagText: '',
           comment: tx.comment,
           images: [],
           removedAttachmentIds: [],
@@ -222,7 +226,7 @@ export function AddEditScreen({ editId }: { editId?: string }) {
     if (!valid || busy || amount === null || !form.categoryId) return;
     setBusy(true);
     try {
-      const input = { type: form.type, amount, categoryId: form.categoryId, date: form.date, comment: form.comment, tagNames: form.tags };
+      const input = { type: form.type, amount, categoryId: form.categoryId, date: form.date, comment: form.comment, tagNames: withPendingTag(form.tags, form.tagText) };
       let message = t('saved');
       if (isEdit && editId) {
         await updateTransaction(db, clock, editId, input, { newImages: form.images, removeAttachmentIds: form.removedAttachmentIds });
@@ -375,7 +379,7 @@ export function AddEditScreen({ editId }: { editId?: string }) {
 
         <div className="field">
           <span className="field__label">{t('tags')}</span>
-          <TagInput tags={form.tags} onChange={(tags) => update({ tags })} suggestions={suggestions} onFocus={closeKeypad} />
+          <TagInput tags={form.tags} onChange={(tags) => update({ tags })} text={form.tagText} onTextChange={(tagText) => update({ tagText })} suggestions={suggestions} onFocus={closeKeypad} />
         </div>
 
         <label className="field">

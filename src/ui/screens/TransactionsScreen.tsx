@@ -9,6 +9,7 @@ import { deleteTransaction, restoreTransaction, sortTransactions } from '../../d
 import type { Transaction, TxType } from '../../data/types';
 import { yearOf, type ISODate } from '../../domain/dates';
 import { formatNumber } from '../../domain/money';
+import { filterTransactions } from '../../domain/transactionFilter';
 import { useI18n } from '../../i18n';
 import { Chip } from '../components/Chip';
 import { DateInput } from '../components/DateInput';
@@ -61,26 +62,11 @@ export function TransactionsScreen({ query }: { query: TransactionsQuery }) {
 
   const filtered = useMemo(() => {
     if (!all || !categories) return null;
-    const q = search.trim().toLowerCase();
-    const qDigits = q.replace(/[^\d.,]/g, '').replace(',', '.');
-    const catIds = new Set(filters.categoryIds);
-    const tagSet = new Set(filters.tagNames.map((x) => x.toLowerCase()));
-    const list = all.filter((tx) => {
-      if (filters.type && tx.type !== filters.type) return false;
-      if (catIds.size && !catIds.has(tx.categoryId)) return false;
-      if (filters.start && tx.date < filters.start) return false;
-      if (filters.end && tx.date > filters.end) return false;
-      if (filters.hasPictures && !withPictures?.has(tx.id)) return false;
-      const tags = tagNames?.get(tx.id) ?? [];
-      if (tagSet.size && !tags.some((x) => tagSet.has(x.toLowerCase()))) return false;
-      if (q) {
-        const cat = categories.byId.get(tx.categoryId)?.name.toLowerCase() ?? '';
-        const inText = tx.comment.toLowerCase().includes(q) || cat.includes(q) || tags.some((x) => x.toLowerCase().includes(q));
-        const inAmount = qDigits !== '' && (formatNumber(tx.amount).replace(/'/g, '').includes(qDigits) || formatNumber(tx.amount).includes(q));
-        if (!inText && !inAmount) return false;
-      }
-      return true;
-    });
+    const list = filterTransactions(
+      all,
+      { search, ...filters },
+      { categoryName: (id) => categories.byId.get(id)?.name ?? '', tagsOf: (id) => tagNames?.get(id) ?? [], hasPictures: (id) => withPictures?.has(id) ?? false },
+    );
     return sortTransactions(list);
   }, [all, categories, search, filters, tagNames, withPictures]);
 
